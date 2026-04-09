@@ -466,26 +466,47 @@
     }
 
     async function uploadMedia(type) {
-        if(!currentRoomId) return showToast('Selecione uma conversa primeiro', true);
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = type === 'image' ? 'image/*' : 'video/*';
-        input.onchange = async (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            const toast = showToast('Enviando mídia...');
-            try {
-                const ext = file.name.split('.').pop();
-                const ref = storage.ref(`chat_media/${currentRoomId}/${Date.now()}_${Math.random()}.${ext}`);
-                await ref.put(file);
-                const url = await ref.getDownloadURL();
-                pendingMedia = { type: type, url: url };
-                await sendMessage();
-                toast.remove();
-            } catch(err) { showToast('Falha no upload. Verifique as regras do Storage.', true); toast.remove(); }
-        };
-        input.click();
-    }
+    if(!currentRoomId) return showToast('Selecione uma conversa primeiro', true);
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = type === 'image' ? 'image/jpeg,image/png,image/jpg,image/gif' : 'video/mp4,video/webm';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        
+        // Valida tamanho (máx 10MB)
+        if(file.size > 10 * 1024 * 1024) {
+            showToast('Arquivo muito grande (máx 10MB)', true);
+            return;
+        }
+        
+        const toast = showToast('Enviando mídia...');
+        try {
+            const ext = file.name.split('.').pop();
+            const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 6)}.${ext}`;
+            const storageRef = storage.ref(`chat_media/${currentRoomId}/${fileName}`);
+            
+            // Upload com metadados
+            const metadata = { contentType: file.type };
+            await storageRef.put(file, metadata);
+            const url = await storageRef.getDownloadURL();
+            
+            pendingMedia = { type: type, url: url };
+            await sendMessage();
+            toast.remove();
+            showToast('Mídia enviada!');
+        } catch(err) {
+            console.error(err);
+            let msg = 'Falha no upload. ';
+            if(err.code === 'storage/unauthorized') msg += 'Regras de segurança do Storage bloqueiam.';
+            else if(err.message.includes('CORS')) msg += 'Erro de CORS. Configure no Firebase Storage.';
+            else msg += err.message;
+            showToast(msg, true);
+            toast.remove();
+        }
+    };
+    input.click();
+}
 
     // GIF Tenor
     const TENOR_API_KEY = "LIVDSRZULELA";
