@@ -2,49 +2,796 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusChat</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <!-- Font Awesome para ícones (opcional, mas ajuda no visual) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CampusChat - Conecte-se</title>
+    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #fafafa;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background-color: white;
+            border-bottom: 1px solid #dbdbdb;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #262626;
+        }
+        .logo i { color: #0095f6; }
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+        nav a, nav button {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            color: #262626;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        nav a:hover, nav button:hover { color: #0095f6; }
+        #userInfo { font-weight: 500; color: #262626; }
+        #logoutBtn { color: #0095f6; font-weight: 600; }
+
+        /* Main */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+
+        /* Footer */
+        footer {
+            background-color: white;
+            border-top: 1px solid #dbdbdb;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .footer-center { text-align: center; color: #8e8e8e; font-size: 0.85rem; }
+
+        /* Login/Signup */
+        .login-container {
+            max-width: 380px;
+            margin: 40px auto;
+            background: white;
+            border: 1px solid #dbdbdb;
+            border-radius: 12px;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .login-container input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #dbdbdb;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0095f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        .error { color: #ed4956; font-size: 0.85rem; margin-top: 8px; }
+
+        /* Chat Wrapper */
+        .chat-wrapper {
+            display: flex;
+            background: white;
+            border: 1px solid #dbdbdb;
+            border-radius: 16px;
+            overflow: hidden;
+            height: 75vh;
+            position: relative;
+        }
+        /* Sidebar */
+        .chat-sidebar {
+            width: 300px;
+            background: #fafafa;
+            border-right: 1px solid #dbdbdb;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease;
+            overflow-y: auto;
+        }
+        .sidebar-header { padding: 15px; border-bottom: 1px solid #dbdbdb; }
+        .sidebar-section { padding: 12px 15px; border-bottom: 1px solid #dbdbdb; }
+        .sidebar-section strong { display: block; margin-bottom: 10px; font-size: 0.9rem; }
+        .rooms-list, .users-list {
+            list-style: none;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .rooms-list li, .users-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background 0.2s;
+            margin-bottom: 4px;
+        }
+        .rooms-list li:hover, .users-list li:hover { background: #efefef; }
+        .rooms-list li.active, .users-list li.active { background: #e0f1ff; font-weight: 500; }
+        .user-avatar-sm {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        #searchUsers {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #dbdbdb;
+            border-radius: 20px;
+            margin: 8px 0;
+        }
+        /* Chat Main */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #dbdbdb;
+            background: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .mobile-toggle-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: #262626;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #fff;
+        }
+        /* Mensagens */
+        .message {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 22px;
+            background: #efefef;
+            align-self: flex-start;
+            word-wrap: break-word;
+        }
+        .message.own {
+            background: #0095f6;
+            color: white;
+            align-self: flex-end;
+        }
+        .message .username {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #8e8e8e;
+        }
+        .message.own .username { color: rgba(255,255,255,0.85); }
+        .message .time {
+            font-size: 0.65rem;
+            margin-top: 6px;
+            text-align: right;
+            color: #8e8e8e;
+        }
+        .message.own .time { color: rgba(255,255,255,0.8); }
+        .media-content {
+            margin-top: 5px;
+            border-radius: 12px;
+            max-width: 260px;
+            max-height: 260px;
+            cursor: pointer;
+        }
+        .media-content img, .media-content video {
+            width: 100%;
+            border-radius: 12px;
+            max-height: 220px;
+            object-fit: cover;
+        }
+        .chat-input-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-top: 1px solid #dbdbdb;
+            background: white;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #dbdbdb;
+            border-radius: 28px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: #262626;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .action-btn:hover { background: #efefef; }
+        .send-btn {
+            background: #0095f6;
+            color: white;
+            border: none;
+            border-radius: 28px;
+            padding: 8px 20px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        /* Modal GIF Tenor */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 550px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .gif-search {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .gif-search input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 28px;
+            border: 1px solid #dbdbdb;
+        }
+        .gif-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px,1fr));
+            gap: 12px;
+        }
+        .gif-grid img {
+            width: 100%;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .gif-grid img:hover { transform: scale(1.02); }
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .chat-sidebar {
+                position: absolute;
+                left: 0;
+                top: 0;
+                height: 100%;
+                z-index: 10;
+                transform: translateX(-100%);
+                width: 260px;
+                box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+            }
+            .chat-sidebar.open { transform: translateX(0); }
+            .mobile-toggle-btn { display: block; }
+            .message { max-width: 85%; }
+            .media-content { max-width: 200px; }
+        }
+        .loading-spinner {
+            text-align: center;
+            padding: 20px;
+            color: #8e8e8e;
+        }
+        /* Devs e Techs */
+        .devs-container, .techs-container {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+        }
+        .devs-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+        }
+        .dev-card {
+            text-align: center;
+            width: 140px;
+        }
+        .dev-card img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 3px solid #0095f6;
+        }
+        .techs-list li { margin: 8px 0; }
+    </style>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <img src="assets/logo.svg" alt="" height="40">
-            <span>CampusChat</span>
-        </div>
-        <nav>
-            <a href="#" data-page="chat">Chat</a>
-            <a href="#" data-page="devs">Desenvolvedores</a>
-            <a href="#" data-page="techs">Tecnologias</a>
-            <span id="userInfo" style="display:none;"></span>
-            <button id="logoutBtn" style="display:none;">Sair</button>
-        </nav>
-    </header>
+<header>
+    <div class="logo"><i class="fab fa-instagram"></i><span>CampusChat</span></div>
+    <nav>
+        <a href="#" data-page="chat"><i class="fas fa-comment-dots"></i> Chat</a>
+        <a href="#" data-page="devs"><i class="fas fa-users"></i> Devs</a>
+        <a href="#" data-page="techs"><i class="fas fa-code"></i> Tecnologias</a>
+        <span id="userInfo"></span>
+        <button id="logoutBtn" style="display:none;">Sair</button>
+    </nav>
+</header>
+<main id="main-content"></main>
+<footer>
+    <div class="footer-left"><img src="https://via.placeholder.com/50?text=IFRN" alt="IFRN" height="40"></div>
+    <div class="footer-center"><p>Trabalho de Programação para Internet - Prof. Marcelo Figueiredo</p></div>
+    <div class="footer-right"></div>
+</footer>
 
-    <main id="main-content">
-        <!-- As páginas serão injetadas aqui via JavaScript -->
-    </main>
+<!-- Modal GIF Tenor -->
+<div id="gifModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-grin-tongue-squint"></i> Escolha um GIF (Tenor)</h3>
+        <div class="gif-search">
+            <input type="text" id="gifSearchInput" placeholder="Buscar GIF... ex: hello, funny">
+            <button id="searchGifBtn" class="action-btn" style="background:#0095f6; color:white; border-radius:28px; padding:0 15px;">Buscar</button>
+        </div>
+        <div id="gifGrid" class="gif-grid">Carregando GIFs populares...</div>
+        <button id="closeGifModal" style="margin-top:15px; background:#dbdbdb; border:none; padding:8px; border-radius:20px; width:100%;">Fechar</button>
+    </div>
+</div>
 
-    <footer>
-        <div class="footer-left">
-            <img src="assets/ifrn-logo.png" alt="IFRN Campus Santa Cruz" height="50">
-        </div>
-        <div class="footer-center">
-            <p>Trabalho de Programação para Internet</p>
-            <p>Prof. Marcelo Figueiredo Barbosa Júnior</p>
-        </div>
-        <div class="footer-right">
-            <!-- links extras opcionais -->
-        </div>
-    </footer>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-    <!-- Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/script.js"></script>
+<script>
+    // ==================== FIREBASE CONFIG ====================
+    const firebaseConfig = {
+        apiKey: "AIzaSyBIqsy6bfacNXOqZIX2Bgp04beJuwL_pJI",
+        authDomain: "chatifrn.firebaseapp.com",
+        projectId: "chatifrn",
+        storageBucket: "chatifrn.firebasestorage.app",
+        messagingSenderId: "109851786257",
+        appId: "1:109851786257:web:9d45ce0899206e41b3c5b0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    // ==================== VARIÁVEIS GLOBAIS ====================
+    let currentUser = null;
+    let currentRoomId = null;
+    let unsubscribeMessages = null;
+    let allUsers = [];
+    let allRooms = [];
+
+    const mainContent = document.getElementById('main-content');
+    const userInfoSpan = document.getElementById('userInfo');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // ==================== NAVEGAÇÃO ====================
+    document.querySelectorAll('nav a[data-page]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const page = link.dataset.page;
+            if (unsubscribeMessages) unsubscribeMessages();
+            showPage(page);
+        });
+    });
+    logoutBtn.addEventListener('click', () => auth.signOut());
+
+    auth.onAuthStateChanged(async user => {
+        currentUser = user;
+        if (user) {
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (!userDoc.exists) {
+                const defaultName = user.email.split('@')[0];
+                await db.collection('users').doc(user.uid).set({
+                    uid: user.uid, email: user.email, displayName: defaultName,
+                    photoURL: `https://ui-avatars.com/api/?background=0095f6&color=fff&name=${encodeURIComponent(defaultName)}`,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                await user.updateProfile({ displayName: defaultName });
+            }
+            const userData = (await db.collection('users').doc(user.uid).get()).data();
+            userInfoSpan.textContent = `Olá, ${userData.displayName}`;
+            userInfoSpan.style.display = 'inline';
+            logoutBtn.style.display = 'inline';
+            showPage('chat');
+        } else {
+            userInfoSpan.style.display = 'none';
+            logoutBtn.style.display = 'none';
+            showPage('login');
+        }
+    });
+
+    async function showPage(page) {
+        if (page === 'chat' && !currentUser) page = 'login';
+        if (unsubscribeMessages) unsubscribeMessages();
+        switch(page) {
+            case 'login': renderLogin(); break;
+            case 'signup': renderSignup(); break;
+            case 'chat': await renderChat(); break;
+            case 'profile': renderProfile(); break;
+            case 'devs': renderDevs(); break;
+            case 'techs': renderTechs(); break;
+            default: renderLogin();
+        }
+    }
+
+    // ========== LOGIN / SIGNUP ==========
+    function renderLogin() {
+        mainContent.innerHTML = `
+            <div class="login-container">
+                <h2><i class="fab fa-instagram"></i> CampusChat</h2>
+                <input type="email" id="email" placeholder="E-mail">
+                <input type="password" id="password" placeholder="Senha">
+                <button id="loginBtn">Entrar</button>
+                <p class="error" id="loginError"></p>
+                <p>Não tem conta? <a href="#" id="goToSignup" style="color:#0095f6;">Cadastre-se</a></p>
+                <div style="font-size:12px; margin-top:15px;"><strong>Teste:</strong> aluno1@chat.local / senha123</div>
+            </div>`;
+        document.getElementById('loginBtn').onclick = () => {
+            const email = document.getElementById('email').value.trim();
+            const pwd = document.getElementById('password').value;
+            auth.signInWithEmailAndPassword(email, pwd).catch(err => document.getElementById('loginError').innerText = 'E-mail/senha inválidos');
+        };
+        document.getElementById('goToSignup').onclick = (e) => { e.preventDefault(); showPage('signup'); };
+    }
+
+    function renderSignup() {
+        mainContent.innerHTML = `
+            <div class="login-container">
+                <h2>Criar Conta</h2>
+                <input type="email" id="email" placeholder="E-mail">
+                <input type="text" id="displayName" placeholder="Nome">
+                <input type="password" id="password" placeholder="Senha (min 6)">
+                <input type="password" id="confirmPassword" placeholder="Confirmar">
+                <button id="signupBtn">Cadastrar</button>
+                <p class="error" id="signupError"></p>
+                <p>Já tem conta? <a href="#" id="goToLogin" style="color:#0095f6;">Entrar</a></p>
+            </div>`;
+        document.getElementById('signupBtn').onclick = async () => {
+            const email = document.getElementById('email').value.trim();
+            const name = document.getElementById('displayName').value.trim();
+            const pwd = document.getElementById('password').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            if(!email || !name || !pwd) return document.getElementById('signupError').innerText = 'Preencha todos.';
+            if(pwd !== confirm) return document.getElementById('signupError').innerText = 'Senhas não coincidem.';
+            if(pwd.length < 6) return document.getElementById('signupError').innerText = 'Mínimo 6 caracteres.';
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(email, pwd);
+                await cred.user.updateProfile({ displayName: name });
+                await db.collection('users').doc(cred.user.uid).set({
+                    uid: cred.user.uid, email, displayName: name,
+                    photoURL: `https://ui-avatars.com/api/?background=0095f6&color=fff&name=${encodeURIComponent(name)}`,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch(err) { document.getElementById('signupError').innerText = err.message; }
+        };
+        document.getElementById('goToLogin').onclick = (e) => { e.preventDefault(); showPage('login'); };
+    }
+
+    // ========== CHAT PRINCIPAL ==========
+    async function renderChat() {
+        await loadUsers(); await loadRooms();
+        mainContent.innerHTML = `
+            <div class="chat-wrapper">
+                <div class="chat-sidebar" id="chatSidebar">
+                    <div class="sidebar-header"><button id="newRoomBtn" style="background:#0095f6; color:white; border:none; padding:8px; border-radius:20px; width:100%;"><i class="fas fa-plus"></i> Nova Sala Pública</button></div>
+                    <div class="sidebar-section"><strong>💬 Salas Públicas</strong><ul id="publicRoomsList" class="rooms-list"></ul></div>
+                    <div class="sidebar-section"><strong>🔒 Conversas Privadas</strong><ul id="privateRoomsList" class="rooms-list"></ul></div>
+                    <div class="sidebar-section"><strong>👥 Usuários</strong><input type="text" id="searchUsers" placeholder="Buscar..."><ul id="usersList" class="users-list"></ul></div>
+                </div>
+                <div class="chat-main">
+                    <div class="chat-header"><button class="mobile-toggle-btn" id="toggleSidebarBtn"><i class="fas fa-bars"></i></button><span id="currentRoomName">Selecione uma conversa</span></div>
+                    <div class="chat-messages" id="chatMessages"><div class="loading-spinner">Selecione um chat</div></div>
+                    <div class="chat-input-area">
+                        <button id="imageUploadBtn" class="action-btn" title="Enviar Imagem"><i class="fas fa-image"></i></button>
+                        <button id="videoUploadBtn" class="action-btn" title="Enviar Vídeo"><i class="fas fa-video"></i></button>
+                        <button id="gifBtn" class="action-btn" title="Enviar GIF (Tenor)"><i class="fas fa-smile-wink"></i></button>
+                        <input type="text" id="messageInput" placeholder="Digite sua mensagem..." disabled>
+                        <button id="sendBtn" class="send-btn" disabled>Enviar</button>
+                    </div>
+                </div>
+            </div>`;
+        // Mobile sidebar toggle
+        const toggleBtn = document.getElementById('toggleSidebarBtn');
+        const sidebar = document.getElementById('chatSidebar');
+        if(toggleBtn) toggleBtn.onclick = () => sidebar.classList.toggle('open');
+        document.addEventListener('click', function(e) {
+            if(window.innerWidth <= 768 && sidebar.classList.contains('open') && !sidebar.contains(e.target) && !toggleBtn.contains(e.target))
+                sidebar.classList.remove('open');
+        });
+        await renderPublicRooms(); await renderPrivateRooms(); renderUsersList();
+        document.getElementById('newRoomBtn').onclick = async () => { const name = prompt('Nome da sala:'); if(name) await createPublicRoom(name); };
+        document.getElementById('searchUsers').addEventListener('input', e => renderUsersList(e.target.value));
+        document.getElementById('sendBtn').onclick = sendMessage;
+        document.getElementById('messageInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
+        document.getElementById('imageUploadBtn').onclick = () => uploadMedia('image');
+        document.getElementById('videoUploadBtn').onclick = () => uploadMedia('video');
+        document.getElementById('gifBtn').onclick = openGifPicker;
+    }
+
+    async function loadUsers() { const snap = await db.collection('users').get(); allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() })); }
+    async function loadRooms() { const snap = await db.collection('rooms').get(); allRooms = snap.docs.map(d => ({ id: d.id, ...d.data() })); }
+
+    function renderPublicRooms() {
+        const container = document.getElementById('publicRoomsList');
+        if(!container) return;
+        const publicRooms = allRooms.filter(r => r.type === 'public');
+        container.innerHTML = publicRooms.map(room => `<li data-room-id="${room.id}" data-room-name="${room.name}" class="room-item">💬 ${room.name}</li>`).join('');
+        document.querySelectorAll('#publicRoomsList li').forEach(li => li.addEventListener('click', () => selectRoom(li.dataset.roomId, li.dataset.roomName)));
+    }
+    function renderPrivateRooms() {
+        const container = document.getElementById('privateRoomsList');
+        if(!container) return;
+        const privateRooms = allRooms.filter(r => r.type === 'private' && r.participants?.includes(currentUser.uid));
+        container.innerHTML = privateRooms.map(room => {
+            const otherId = room.participants.find(uid => uid !== currentUser.uid);
+            const otherUser = allUsers.find(u => u.id === otherId);
+            return `<li data-room-id="${room.id}" data-room-name="${otherUser?.displayName || 'Usuário'}" class="room-item">👤 ${otherUser?.displayName || 'Usuário'}</li>`;
+        }).join('');
+        document.querySelectorAll('#privateRoomsList li').forEach(li => li.addEventListener('click', () => selectRoom(li.dataset.roomId, li.dataset.roomName)));
+    }
+    function renderUsersList(search='') {
+        const container = document.getElementById('usersList');
+        if(!container) return;
+        const filtered = allUsers.filter(u => u.uid !== currentUser.uid && u.displayName.toLowerCase().includes(search.toLowerCase()));
+        container.innerHTML = filtered.map(user => `<li data-user-id="${user.uid}" data-user-name="${user.displayName}"><img class="user-avatar-sm" src="${user.photoURL}"> ${user.displayName}</li>`).join('');
+        document.querySelectorAll('#usersList li').forEach(li => li.addEventListener('click', () => startPrivateChat(li.dataset.userId, li.dataset.userName)));
+    }
+    async function startPrivateChat(otherId, otherName) {
+        const roomId = [currentUser.uid, otherId].sort().join('_');
+        const ref = db.collection('rooms').doc(roomId);
+        const doc = await ref.get();
+        if(!doc.exists) await ref.set({ id: roomId, name: `Private: ${currentUser.displayName} e ${otherName}`, type: 'private', participants: [currentUser.uid, otherId], createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        await loadRooms(); renderPrivateRooms();
+        selectRoom(roomId, otherName);
+    }
+    async function createPublicRoom(name) {
+        const ref = db.collection('rooms').doc();
+        await ref.set({ id: ref.id, name, type: 'public', createdBy: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        await loadRooms(); renderPublicRooms();
+    }
+    function selectRoom(roomId, roomName) {
+        if(unsubscribeMessages) unsubscribeMessages();
+        currentRoomId = roomId;
+        document.getElementById('currentRoomName').innerText = roomName;
+        loadMessages(roomId);
+        document.querySelectorAll('.room-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll(`.room-item[data-room-id="${roomId}"]`).forEach(el => el.classList.add('active'));
+        if(window.innerWidth <= 768) document.getElementById('chatSidebar')?.classList.remove('open');
+    }
+
+    function loadMessages(roomId) {
+        const messagesDiv = document.getElementById('chatMessages');
+        const msgInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        if(!messagesDiv) return;
+        messagesDiv.innerHTML = '<div class="loading-spinner">Carregando...</div>';
+        if(msgInput) msgInput.disabled = true; if(sendBtn) sendBtn.disabled = true;
+        unsubscribeMessages = db.collection('messages').where('roomId', '==', roomId).orderBy('timestamp', 'asc').onSnapshot(snap => {
+            messagesDiv.innerHTML = '';
+            if(msgInput) msgInput.disabled = false; if(sendBtn) sendBtn.disabled = false;
+            if(snap.empty) { messagesDiv.innerHTML = '<div class="loading-spinner">Nenhuma mensagem ainda.</div>'; return; }
+            snap.forEach(doc => {
+                const msg = doc.data();
+                const div = document.createElement('div');
+                div.classList.add('message');
+                if(msg.userId === currentUser.uid) div.classList.add('own');
+                let timeStr = msg.timestamp ? msg.timestamp.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+                let mediaHtml = '';
+                if(msg.type === 'image') mediaHtml = `<div class="media-content" onclick="window.open('${msg.mediaUrl}','_blank')"><img src="${msg.mediaUrl}" alt="imagem"></div>`;
+                else if(msg.type === 'video') mediaHtml = `<div class="media-content"><video controls src="${msg.mediaUrl}" style="max-width:100%; border-radius:12px;"></video></div>`;
+                else if(msg.type === 'gif') mediaHtml = `<div class="media-content"><img src="${msg.mediaUrl}" alt="gif"></div>`;
+                div.innerHTML = `<div class="username">${msg.username}</div>${mediaHtml}${msg.text ? `<div>${msg.text}</div>` : ''}<div class="time">${timeStr}</div>`;
+                messagesDiv.appendChild(div);
+            });
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+    }
+
+    let pendingMedia = null;
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const text = input.value.trim();
+        if((!text && !pendingMedia) || !currentRoomId || !currentUser) return;
+        const sendBtn = document.getElementById('sendBtn');
+        input.disabled = true; sendBtn.disabled = true;
+        let mediaPayload = {};
+        if(pendingMedia) {
+            mediaPayload = { type: pendingMedia.type, mediaUrl: pendingMedia.url };
+            pendingMedia = null;
+        }
+        try {
+            await db.collection('messages').add({
+                roomId: currentRoomId,
+                text: text || '',
+                userId: currentUser.uid,
+                username: currentUser.displayName || currentUser.email.split('@')[0],
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                ...mediaPayload
+            });
+            input.value = '';
+        } catch(e) { alert('Erro ao enviar'); }
+        input.disabled = false; sendBtn.disabled = false; input.focus();
+    }
+
+    // Upload de imagem/vídeo
+    async function uploadMedia(type) {
+        if(!currentRoomId) return alert('Selecione uma conversa primeiro');
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = type === 'image' ? 'image/*' : 'video/*';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const toast = document.createElement('div'); toast.innerText = 'Enviando mídia...'; toast.style.position='fixed'; toast.style.bottom='20px'; toast.style.background='#262626'; toast.style.color='white'; toast.style.padding='8px 16px'; toast.style.borderRadius='20px'; toast.style.zIndex='999'; document.body.appendChild(toast);
+            try {
+                const ext = file.name.split('.').pop();
+                const ref = storage.ref(`chat_media/${currentRoomId}/${Date.now()}_${Math.random()}.${ext}`);
+                await ref.put(file);
+                const url = await ref.getDownloadURL();
+                pendingMedia = { type: type, url: url };
+                await sendMessage();
+                toast.remove();
+            } catch(err) { toast.remove(); alert('Falha no upload. Verifique as regras do Storage.'); }
+        };
+        input.click();
+    }
+
+    // ========== GIFS COM TENOR API ==========
+    const TENOR_API_KEY = "LIVDSRZULELA"; // chave pública de teste do Tenor (funciona para busca)
+    async function fetchGifs(searchTerm = "funny") {
+        const url = `https://g.tenor.com/v1/search?q=${encodeURIComponent(searchTerm)}&key=${TENOR_API_KEY}&limit=24`;
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            if(data.results) return data.results.map(gif => gif.media[0].gif.url);
+            return [];
+        } catch(e) { return []; }
+    }
+    async function openGifPicker() {
+        if(!currentRoomId) return alert('Selecione uma conversa primeiro');
+        const modal = document.getElementById('gifModal');
+        const grid = document.getElementById('gifGrid');
+        modal.style.display = 'flex';
+        grid.innerHTML = 'Carregando GIFs...';
+        let gifs = await fetchGifs("happy");
+        if(gifs.length === 0) gifs = ["https://media.tenor.com/-R1o44fr1YAAAAi/hello-wave.gif", "https://media.tenor.com/mCiM7CmGGI4AAAAi/thumbs-up.gif"];
+        renderGifGrid(gifs);
+        document.getElementById('searchGifBtn').onclick = async () => {
+            const search = document.getElementById('gifSearchInput').value.trim();
+            if(!search) return;
+            grid.innerHTML = 'Buscando...';
+            const results = await fetchGifs(search);
+            renderGifGrid(results.length ? results : gifs);
+        };
+        document.getElementById('closeGifModal').onclick = () => modal.style.display = 'none';
+    }
+    function renderGifGrid(gifUrls) {
+        const grid = document.getElementById('gifGrid');
+        grid.innerHTML = gifUrls.map(url => `<img src="${url}" data-gif-url="${url}" style="cursor:pointer;">`).join('');
+        document.querySelectorAll('#gifGrid img').forEach(img => {
+            img.onclick = async () => {
+                const gifUrl = img.dataset.gifUrl || img.src;
+                pendingMedia = { type: 'gif', url: gifUrl };
+                await sendMessage();
+                document.getElementById('gifModal').style.display = 'none';
+            };
+        });
+    }
+
+    // ========== PERFIL ==========
+    async function renderProfile() {
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        const data = userDoc.data();
+        mainContent.innerHTML = `
+            <div class="login-container" style="max-width:500px;">
+                <h2>Editar Perfil</h2>
+                <img src="${data.photoURL}" style="width:100px; border-radius:50%; margin-bottom:15px;">
+                <input type="text" id="displayName" value="${data.displayName}">
+                <input type="text" id="photoURL" placeholder="URL da foto" value="${data.photoURL || ''}">
+                <button id="saveProfileBtn">Salvar</button>
+                <p class="error" id="profileError"></p>
+            </div>`;
+        document.getElementById('saveProfileBtn').onclick = async () => {
+            const newName = document.getElementById('displayName').value.trim();
+            const newPhoto = document.getElementById('photoURL').value.trim();
+            if(!newName) return;
+            await currentUser.updateProfile({ displayName: newName, photoURL: newPhoto });
+            await db.collection('users').doc(currentUser.uid).update({ displayName: newName, photoURL: newPhoto || `https://ui-avatars.com/api/?background=0095f6&name=${encodeURIComponent(newName)}` });
+            userInfoSpan.textContent = `Olá, ${newName}`;
+            alert('Perfil atualizado!');
+        };
+    }
+    function renderDevs() {
+        mainContent.innerHTML = `<div class="devs-container"><h2>👥 Desenvolvedores</h2><div class="devs-list">
+            <div class="dev-card"><img src="https://i.pravatar.cc/150?u=1"><h4>Arthur</h4><p>Front-end & Firebase</p></div>
+            <div class="dev-card"><img src="https://i.pravatar.cc/150?u=2"><h4>Victor</h4><p>Testes</p></div>
+            <div class="dev-card"><img src="https://i.pravatar.cc/150?u=3"><h4>João H.</h4><p>Design</p></div>
+            <div class="dev-card"><img src="https://i.pravatar.cc/150?u=4"><h4>Adailton</h4><p>QA</p></div>
+        </div></div>`;
+    }
+    function renderTechs() {
+        mainContent.innerHTML = `<div class="techs-container"><h2>⚙️ Tecnologias</h2><ul class="techs-list"><li><i class="fab fa-html5"></i> HTML5</li><li><i class="fab fa-css3-alt"></i> CSS3</li><li><i class="fab fa-js"></i> JavaScript (ES6+)</li><li><i class="fas fa-fire"></i> Firebase (Auth, Firestore, Storage)</li><li><i class="fas fa-image"></i> Imagens, Vídeos, GIFs (Tenor API)</li></ul><p>📚 Interface inspirada no Instagram - Chat completo</p></div>`;
+    }
+
+    // Adiciona link Perfil
+    const nav = document.querySelector('nav');
+    if(nav && !document.querySelector('a[data-page="profile"]')) {
+        const profileLink = document.createElement('a');
+        profileLink.href = '#';
+        profileLink.innerHTML = '<i class="fas fa-user-circle"></i> Perfil';
+        profileLink.setAttribute('data-page', 'profile');
+        profileLink.addEventListener('click', (e) => { e.preventDefault(); showPage('profile'); });
+        nav.appendChild(profileLink);
+    }
+</script>
 </body>
 </html>

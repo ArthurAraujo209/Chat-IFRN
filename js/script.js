@@ -465,7 +465,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="dev-card"><img src="https://i.pravatar.cc/150?u=1"><h4>Arthur</h4><p>Front-end & Firebase</p></div>
                     <div class="dev-card"><img src="https://i.pravatar.cc/150?u=2"><h4>Victor</h4><p>Testou</p></div>
                     <div class="dev-card"><img src="https://i.pravatar.cc/150?u=3"><h4>João Henrique</h4><p>Tava fazendo o corta vento</p></div>
-                    <div class="dev-card"><img src="https://i.pravatar.cc/150?u=4"><h4>Alguém</h4><p>Testes</p></div>
+                    <div class="dev-card"><img src="https://i.pravatar.cc/150?u=4"><h4>Adailton</h4><p>Testes</p></div>
                 </div>
             </div>
         `;
